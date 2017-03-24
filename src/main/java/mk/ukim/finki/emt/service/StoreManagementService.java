@@ -3,25 +3,32 @@ package mk.ukim.finki.emt.service;
 
 import mk.ukim.finki.emt.model.exceptions.CategoryInUseException;
 import mk.ukim.finki.emt.model.jpa.Book;
+import mk.ukim.finki.emt.model.jpa.BookPicture;
 import mk.ukim.finki.emt.model.jpa.Category;
 import mk.ukim.finki.emt.model.jpa.DeliveryPackage;
+
+import java.sql.SQLException;
 
 /**
  * @author Riste Stojanov
  */
 public interface StoreManagementService {
 
+  Category createTopLevelCategory(
+          String name
+  );
+
   Category createCategory(
     String name,
     Long parentId
   );
 
-  void updateCategoryName(
+  Category updateCategoryName(
     Long id,
     String newName
   );
 
-  void changeCategoryParent(
+  Category changeCategoryParent(
     Long id,
     Long parentId
   );
@@ -89,5 +96,9 @@ public interface StoreManagementService {
     Long deliveryId
   );
 
-
+  BookPicture addBookPicture(
+          Long bookId,
+          byte[] bytes,
+          String contentType
+  ) throws SQLException;
 }
