@@ -6,6 +6,7 @@ import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,12 @@ public class Book extends BaseEntity {
   @Field(index = Index.YES, store= Store.NO, analyze = Analyze.YES)
   @Analyzer(definition = "emtAnalyser")
   @Boost(.5f)
-  public String isbn;
+  public String isbn10;
+
+  @Field(index = Index.YES, store= Store.NO, analyze = Analyze.YES)
+  @Analyzer(definition = "emtAnalyser")
+  @Boost(.5f)
+  public String isbn13;
 
   public Integer quantityInStock;
 

@@ -1,31 +1,29 @@
 package mk.ukim.finki.emt.service.impl;
 
-import mk.ukim.finki.emt.model.jpa.*;
+import mk.ukim.finki.emt.model.enums.IsbnLength;
+import mk.ukim.finki.emt.model.exceptions.IsbnLengthException;
+import mk.ukim.finki.emt.model.exceptions.NegativePriceException;
+import mk.ukim.finki.emt.model.jpa.Author;
+import mk.ukim.finki.emt.model.jpa.Book;
+import mk.ukim.finki.emt.model.jpa.Category;
 import mk.ukim.finki.emt.persistence.AuthorsRepository;
-import mk.ukim.finki.emt.persistence.BookPictureRepository;
 import mk.ukim.finki.emt.persistence.BookRepository;
 import mk.ukim.finki.emt.persistence.CategoryRepository;
 import mk.ukim.finki.emt.service.BookServiceHelper;
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.sql.rowset.serial.SerialBlob;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Riste Stojanov
  */
 @Service
-public class BookHelperImpl implements BookServiceHelper {
+public class BookHelperImpl extends BookAbstraction implements BookServiceHelper {
 
-    /*
-    * TODO: move this into book details helper
-    * */
-    @Autowired
-    BookPictureRepository bookPictureRepository;
     private CategoryRepository categoryRepository;
-    private BookRepository bookRepository;
     private AuthorsRepository authorsRepository;
 
     @Autowired
@@ -33,28 +31,21 @@ public class BookHelperImpl implements BookServiceHelper {
             CategoryRepository categoryRepository,
             BookRepository bookRepository,
             AuthorsRepository authorsRepository) {
+        super(bookRepository);
         this.categoryRepository = categoryRepository;
-        this.bookRepository = bookRepository;
         this.authorsRepository = authorsRepository;
     }
 
     @Override
-    public List<Book> getBooksInCategory(Long categoryId) {
-        return null;
-    }
-
-    @Override
-    public BookDetails getBookDetails(Long bookId) {
-        return null;
-    }
-
-    @Override
-    public Book createBook(String name, Long categoryId, String[] authors, String isbn, Double price) {
+    public Book createBook(String name, Long categoryId, String[] authors, String isbn10, String isbn13, Double price) throws IsbnLengthException, NegativePriceException {
         Book book = new Book();
+
         book.name = name;
-        book.isbn = isbn;
-        book.price = price;
-        book.category = categoryRepository.findOne(categoryId);
+        book.isbn10 = checkIsbn(isbn10, IsbnLength.TEN);
+        book.isbn13 = checkIsbn(isbn13, IsbnLength.THIRTEEN);
+        book.price = checkPrice(price);
+        book.category = checkCategory(categoryId);
+
         for (String authorName : authors){
             Author author = getOrCreateAuthor(authorName);
             book.authors.add(author);
@@ -63,31 +54,37 @@ public class BookHelperImpl implements BookServiceHelper {
     }
 
     @Override
-    public Book updateBook(Long bookId, String name, String[] authors, String isbn) {
-        return null;
+    public Book updateBook(Long bookId, String name, String[] authors, String isbn10, String isbn13) throws IsbnLengthException {
+        Book book = checkBook(bookId);
+
+        book.name = name;
+        book.isbn10 = checkIsbn(isbn10, IsbnLength.TEN);
+        book.isbn13 = checkIsbn(isbn13, IsbnLength.THIRTEEN);
+
+        List<Author> authorsList = new ArrayList<>();
+        for (String authorName: authors){
+            Author author = getOrCreateAuthor(authorName);
+            authorsList.add(author);
+        }
+        book.authors = authorsList;
+
+        return bookRepository.save(book);
     }
 
     @Override
-    public Book updateBookPrice(Long bookId, Double price) {
-        return null;
+    public Book updateBookPrice(Long bookId, Double price) throws NegativePriceException {
+        Book book = checkBook(bookId);
+        book.price = checkPrice(price);
+
+        return bookRepository.save(book);
     }
 
     @Override
     public Book updateBookCategory(Long bookId, Long newCategoryId) {
-        return null;
-    }
+        Book book = checkBook(bookId);
+        book.category = checkCategory(newCategoryId);
 
-    @Override
-    public BookPicture addBookPicture(Long bookId, byte[] bytes, String contentType) throws SQLException {
-        BookPicture bookPicture = new BookPicture();
-        bookPicture.book = bookRepository. findOne(bookId);
-        FileEmbeddable picture = new FileEmbeddable();
-        picture.contentType = contentType;
-        picture.data = new SerialBlob(bytes);
-        picture.size = bytes.length;
-        picture.fileName = bookPicture.book.name;
-        bookPicture.picture = picture;
-        return bookPictureRepository.save(bookPicture);
+        return bookRepository.save(book);
     }
 
     private Author getOrCreateAuthor(String authorName){
@@ -98,5 +95,30 @@ public class BookHelperImpl implements BookServiceHelper {
             author = authorsRepository.save(author);
         }
         return author;
+    }
+
+    private String checkIsbn(String isbn, IsbnLength type) throws IsbnLengthException {
+        switch (type){
+            case TEN:
+                if (isbn.length() != 10 && isbn.length() != 0) throw new IsbnLengthException(type, isbn.length());
+                break;
+            case THIRTEEN:
+                if (isbn.length() != 13 && isbn.length() != 0) throw new IsbnLengthException(type, isbn.length());
+        }
+
+        return isbn;
+    }
+
+    private double checkPrice(double price) throws NegativePriceException {
+        if (price < 0)
+            throw new NegativePriceException(price);
+        return price;
+    }
+
+    private Category checkCategory(long categoryId){
+        Category category = categoryRepository.findOne(categoryId);
+        if (category == null)
+            throw new ObjectNotFoundException(categoryId, "Category");
+        return category;
     }
 }

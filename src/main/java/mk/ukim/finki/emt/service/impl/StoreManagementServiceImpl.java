@@ -1,13 +1,11 @@
 package mk.ukim.finki.emt.service.impl;
 
 import mk.ukim.finki.emt.model.exceptions.CategoryInUseException;
-import mk.ukim.finki.emt.model.jpa.Book;
-import mk.ukim.finki.emt.model.jpa.BookPicture;
-import mk.ukim.finki.emt.model.jpa.Category;
-import mk.ukim.finki.emt.model.jpa.DeliveryPackage;
-import mk.ukim.finki.emt.service.BookServiceHelper;
-import mk.ukim.finki.emt.service.CategoryServiceHelper;
-import mk.ukim.finki.emt.service.StoreManagementService;
+import mk.ukim.finki.emt.model.exceptions.IsbnLengthException;
+import mk.ukim.finki.emt.model.exceptions.NegativePriceException;
+import mk.ukim.finki.emt.model.exceptions.NoBookInStockException;
+import mk.ukim.finki.emt.model.jpa.*;
+import mk.ukim.finki.emt.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +17,29 @@ import java.sql.SQLException;
 @Service
 public class StoreManagementServiceImpl implements StoreManagementService {
 
-  @Autowired
-  private CategoryServiceHelper categoryServiceHelper;
+  private final CategoryServiceHelper categoryServiceHelper;
+  private final BookServiceHelper bookServiceHelper;
+  private final BookDetailsServiceHelper bookDetailsServiceHelper;
+  private final StockServiceHelper stockServiceHelper;
+  private final DeliveryServiceHelper deliveryServiceHelper;
+  private final InvoiceServerHelper invoiceServerHelper;
 
   @Autowired
-  private BookServiceHelper bookServiceHelper;
+  public StoreManagementServiceImpl(
+          CategoryServiceHelper categoryServiceHelper,
+          BookServiceHelper bookServiceHelper,
+          BookDetailsServiceHelper bookDetailsServiceHelper,
+          StockServiceHelper stockServiceHelper,
+          DeliveryServiceHelper deliveryServiceHelper,
+          InvoiceServerHelper invoiceServerHelper
+  ) {
+    this.categoryServiceHelper = categoryServiceHelper;
+    this.bookServiceHelper = bookServiceHelper;
+    this.bookDetailsServiceHelper = bookDetailsServiceHelper;
+    this.stockServiceHelper = stockServiceHelper;
+    this.deliveryServiceHelper = deliveryServiceHelper;
+    this.invoiceServerHelper = invoiceServerHelper;
+  }
 
   @Override
   public Category createTopLevelCategory(String name) {
@@ -51,17 +67,17 @@ public class StoreManagementServiceImpl implements StoreManagementService {
   }
 
   @Override
-  public Book createBook(String name, Long categoryId, String[] authors, String isbn, Double price) {
-    return bookServiceHelper.createBook(name, categoryId, authors, isbn, price);
+  public Book createBook(String name, Long categoryId, String[] authors, String isbn10, String isbn13, Double price) throws NegativePriceException, IsbnLengthException {
+    return bookServiceHelper.createBook(name, categoryId, authors, isbn10, isbn13, price);
   }
 
   @Override
-  public Book updateBook(Long bookId, String name, String[] authors, String isbn) {
-    return bookServiceHelper.updateBook(bookId, name, authors, isbn);
+  public Book updateBook(Long bookId, String name, String[] authors, String isbn10, String isbn13) throws IsbnLengthException {
+    return bookServiceHelper.updateBook(bookId, name, authors, isbn10, isbn13);
   }
 
   @Override
-  public Book updateBookPrice(Long bookId, Double price) {
+  public Book updateBookPrice(Long bookId, Double price) throws NegativePriceException {
     return bookServiceHelper.updateBookPrice(bookId, price);
   }
 
@@ -72,12 +88,12 @@ public class StoreManagementServiceImpl implements StoreManagementService {
 
   @Override
   public void addBooksInStock(Long bookId, int quantity) {
-
+    stockServiceHelper.addBooksInStock(bookId, quantity);
   }
 
   @Override
-  public void donateBooks(Long bookId, int quantity) {
-
+  public void donateBooks(Long bookId, int quantity) throws NoBookInStockException {
+    stockServiceHelper.donateBooks(bookId, quantity);
   }
 
   @Override
@@ -87,31 +103,36 @@ public class StoreManagementServiceImpl implements StoreManagementService {
 
   @Override
   public void markInvoiceAsExpired(Long invoiceId) {
-
+    invoiceServerHelper.markInvoiceAsExpired(invoiceId);
   }
 
   @Override
   public DeliveryPackage markInvoiceAsPayed(Long invoiceId) {
-    return null;
+    return invoiceServerHelper.markInvoiceAsPayed(invoiceId);
   }
 
   @Override
   public void preparedDelivery(Long deliverId) {
-
+    deliveryServiceHelper.preparedDelivery(deliverId);
   }
 
   @Override
   public void shippedDelivery(Long deliveryId) {
-
+    deliveryServiceHelper.shippedDelivery(deliveryId);
   }
 
   @Override
   public void closeDeliveryWithoutConfirmation(Long deliveryId) {
-
+    deliveryServiceHelper.closeDeliveryWithoutConfirmation(deliveryId);
   }
 
   @Override
   public BookPicture addBookPicture(Long bookId, byte[] bytes, String contentType) throws SQLException {
-    return bookServiceHelper.addBookPicture(bookId, bytes, contentType);
+    return bookDetailsServiceHelper.addBookPicture(bookId, bytes, contentType);
+  }
+
+  @Override
+  public BookDetails addBookDetails(Long bookId, String description, byte[] bytes, String contentType) throws SQLException {
+    return bookDetailsServiceHelper.addBookDetails(bookId, description, bytes, contentType);
   }
 }

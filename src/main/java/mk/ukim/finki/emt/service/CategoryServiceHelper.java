@@ -12,9 +12,13 @@ public interface CategoryServiceHelper {
 
     List<Category> getTopLevelCategories();
 
-    List<Category> getSubCategories(Long categoryId);
+    List<Category> getSubCategories(
+            Long categoryId
+    );
 
-    Category createTopLevelCategory(String name);
+    Category createTopLevelCategory(
+            String name
+    );
 
     Category createCategory(
             String name,

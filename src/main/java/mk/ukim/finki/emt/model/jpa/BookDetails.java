@@ -18,5 +18,4 @@ public class BookDetails extends BaseEntity {
   @Embedded
   public FileEmbeddable downloadFile;
 
-
 }

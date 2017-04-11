@@ -18,7 +18,7 @@ import java.util.List;
 public class CategoryHelperImpl implements CategoryServiceHelper {
 
 
-    static Logger logger = (Logger) LoggerFactory.getLogger(CategoryServiceHelper.class);
+    private static Logger logger = (Logger) LoggerFactory.getLogger(CategoryServiceHelper.class);
 
     private final CategoryRepository repository;
 
@@ -77,13 +77,14 @@ public class CategoryHelperImpl implements CategoryServiceHelper {
     public void removeCategory(Long id) throws CategoryInUseException {
         List<Category> children = repository.findByParentId(id);
         if (children != null && !children.isEmpty()) {
-            throw new CategoryInUseException();
+            throw new CategoryInUseException(id);
         }
 
         repository.delete(id);
         logger.debug("removed category with id {}.", id);
     }
 
+    /*
     private void badCode(Integer a, Integer b) {
         if (a == null) {
             if (b == null) {
@@ -107,4 +108,5 @@ public class CategoryHelperImpl implements CategoryServiceHelper {
             // state a!=null, b!=null
         }
     }
+    */
 }
