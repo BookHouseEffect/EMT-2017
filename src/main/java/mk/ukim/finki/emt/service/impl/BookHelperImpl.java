@@ -38,17 +38,15 @@ public class BookHelperImpl extends BookAbstraction implements BookServiceHelper
 
     @Override
     public Book createBook(String name, Long categoryId, String[] authors, String isbn10, String isbn13, Double price) throws IsbnLengthException, NegativePriceException {
-        Book book = new Book();
+        Book book = createBookWithNewAuthors(name, categoryId, authors, isbn10, isbn13, price);
+        return bookRepository.save(book);
+    }
 
-        book.name = name;
-        book.isbn10 = checkIsbn(isbn10, IsbnLength.TEN);
-        book.isbn13 = checkIsbn(isbn13, IsbnLength.THIRTEEN);
-        book.price = checkPrice(price);
-        book.category = checkCategory(categoryId);
-
-        for (String authorName : authors){
-            Author author = getOrCreateAuthor(authorName);
-            book.authors.add(author);
+    @Override
+    public Book createBook(String name, Long categoryId, String[] authors, Long[] existingAuthors, String isbn10, String isbn13, Double price) throws NegativePriceException, IsbnLengthException {
+        Book book = createBookWithNewAuthors(name, categoryId, authors, isbn10, isbn13, price);
+        for (Long authorId : existingAuthors) {
+            book.authors.add(checkAuthor(authorId));
         }
         return bookRepository.save(book);
     }
@@ -63,7 +61,7 @@ public class BookHelperImpl extends BookAbstraction implements BookServiceHelper
 
         List<Author> authorsList = new ArrayList<>();
         for (String authorName: authors){
-            Author author = getOrCreateAuthor(authorName);
+            Author author = createAuthor(authorName);
             authorsList.add(author);
         }
         book.authors = authorsList;
@@ -87,13 +85,17 @@ public class BookHelperImpl extends BookAbstraction implements BookServiceHelper
         return bookRepository.save(book);
     }
 
-    private Author getOrCreateAuthor(String authorName){
-        Author author = authorsRepository.findByNameAndLastName(authorName);
-        if (author == null){
-            author = new Author();
-            author.nameAndLastName = authorName;
-            author = authorsRepository.save(author);
-        }
+    private Author checkAuthor(Long authorId){
+        Author author = authorsRepository.findOne(authorId);
+        if (author == null)
+            throw new ObjectNotFoundException(authorId, "Author");
+        return author;
+    }
+
+    private Author createAuthor(String authorName) {
+        Author author = new Author();
+        author.nameAndLastName = authorName;
+        author = authorsRepository.save(author);
         return author;
     }
 
@@ -120,5 +122,22 @@ public class BookHelperImpl extends BookAbstraction implements BookServiceHelper
         if (category == null)
             throw new ObjectNotFoundException(categoryId, "Category");
         return category;
+    }
+
+    private Book createBookWithNewAuthors(String name, Long categoryId, String[] authors, String isbn10, String isbn13, Double price) throws IsbnLengthException, NegativePriceException {
+        Book book = new Book();
+
+        book.name = name;
+        book.isbn10 = checkIsbn(isbn10, IsbnLength.TEN);
+        book.isbn13 = checkIsbn(isbn13, IsbnLength.THIRTEEN);
+        book.price = checkPrice(price);
+        book.category = checkCategory(categoryId);
+
+        for (String authorName : authors){
+            Author author = createAuthor(authorName);
+            book.authors.add(author);
+        }
+
+        return book;
     }
 }

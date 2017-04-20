@@ -24,6 +24,16 @@ public interface BookServiceHelper {
             Double price
     ) throws IsbnLengthException, NegativePriceException;
 
+    Book createBook(
+            String name,
+            Long categoryId,
+            String[] authors,
+            Long[] existingAuthors,
+            String isbn10,
+            String isbn13,
+            Double price
+    ) throws NegativePriceException, IsbnLengthException;
+
     Book updateBook(
             Long bookId,
             String name,
