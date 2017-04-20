@@ -106,7 +106,7 @@ public class CategoryHelperTest {
 
     @Test
     public void testFindSubcategories() {
-        List<Category> result = categoryServiceHelper.getSubCategories(1l);
+        List<Category> result = categoryServiceHelper.getSubCategories(1L);
         System.out.println(result);
     }
 }
