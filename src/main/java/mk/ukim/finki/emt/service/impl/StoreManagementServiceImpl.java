@@ -67,8 +67,8 @@ public class StoreManagementServiceImpl implements StoreManagementService {
   }
 
   @Override
-  public Book createBook(String name, Long categoryId, String[] authors, String isbn10, String isbn13, Double price) throws NegativePriceException, IsbnLengthException {
-    return bookServiceHelper.createBook(name, categoryId, authors, isbn10, isbn13, price);
+  public Book createBook(String name, Long categoryId, String[] newAuthors, Long[] existingAuthors, String isbn10, String isbn13, Double price) throws NegativePriceException, IsbnLengthException {
+    return bookServiceHelper.createBook(name, categoryId, newAuthors, existingAuthors, isbn10, isbn13, price);
   }
 
   @Override

@@ -6,7 +6,7 @@ import mk.ukim.finki.emt.model.jpa.Category;
 import mk.ukim.finki.emt.persistence.BookPictureRepository;
 import mk.ukim.finki.emt.persistence.CategoryRepository;
 import mk.ukim.finki.emt.persistence.QueryRepository;
-import mk.ukim.finki.emt.persistence.impl.SearchRepository;
+import mk.ukim.finki.emt.persistence.impl.SearchRepositoryImp;
 import mk.ukim.finki.emt.service.QueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ public class QueryServiceImpl implements QueryService {
     BookPictureRepository bookPictureRepository;
 
     @Autowired
-    SearchRepository searchRepository;
+    SearchRepositoryImp searchRepositoryImp;
 
     @Autowired
     public QueryServiceImpl(
@@ -61,7 +61,7 @@ public class QueryServiceImpl implements QueryService {
 
     @Override
     public List<Book> searchBook(String query) {
-        return searchRepository.searchPhrase(Book.class, query,
+        return searchRepositoryImp.searchPhrase(Book.class, query,
                 "name", "isbn", "category.name", "authors.nameAndLastName");
     }
 }

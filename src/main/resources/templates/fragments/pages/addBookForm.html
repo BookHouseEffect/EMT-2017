@@ -1,17 +1,80 @@
 <!DOCTYPE html>
-Create product:
+<h1 class="title">Create book</h1>
+<hr/>
+
 <form th:action="@{/admin/book}"
       enctype="multipart/form-data"
       method="POST"
-      xmlns:th="http://www.thymeleaf.org">
-  Name: <input type="text" name="name"> </input>
-  Description: <input type="text" name="description"> </input>
-  Category: <select name="categoryId">
-                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+      xmlns:th="http://www.thymeleaf.org"
+      class="form-horizontal"
+>
+
+    <div class="form-group">
+        <label for="name" class="control-label col-md-2">Name:</label>
+        <div class="col-md-8">
+            <input type="text" id="name" name="name" class="form-control" placeholder="Enter book's name..." />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="description" class="control-label col-md-2">Description:</label>
+        <div class="col-md-8">
+            <input type="text" id="description" name="description" class="form-control" placeholder="Enter book's description..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="categoryId" class="control-label col-md-2">Category:</label>
+        <div class="col-md-8">
+            <select id="categoryId" name="categoryId" class="form-control">
+                <option value="" disabled="disabled" selected="selected" > Choose book's category... </option>
+                <option
+                        th:each="c : ${categories}"
+                        th:value="${c.id}"
+                        th:text="${c.name}">
+                </option>
             </select>
-  ISBN: <input type="text" name="isbn"> </input>
-  Price: <input type="text" name="price"> </input>
-  Auhtors: <input type="text" name="authors"> </input>
-  Picture (png): <input type="file" name="picture"></input>
-  <input type="submit">Submit</input>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="isbn10" class="control-label col-md-2">ISBN10:</label>
+        <div class="col-md-8">
+            <input type="text" id="isbn10" name="isbn10" class="form-control" placeholder="Enter book's ISBN10 number..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="isbn13" class="control-label col-md-2">ISBN13:</label>
+        <div class="col-md-8">
+            <input type="text" id="isbn13" name="isbn13" class="form-control" placeholder="Enter book's ISBN13 number..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="price" class="control-label col-md-2">Price: </label>
+        <div class="col-md-8">
+            <input type="text" id="price" name="price" class="form-control" placeholder="Enter book's price..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="authors" class="control-label col-md-2">Authors: </label>
+        <div class="col-md-8">
+            <input type="text" id="authors" name="authors" class="form-control" placeholder="Enter book's authors..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="picture" class="control-label col-md-2">Picture (png): </label>
+        <div class="col-md-8">
+            <input type="file" id="picture" name="picture" class="form-control-static col-xs-12" placeholder="Upload book's cover photo..."/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-8">
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+    </div>
 </form>

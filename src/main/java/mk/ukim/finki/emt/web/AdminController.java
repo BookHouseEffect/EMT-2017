@@ -5,8 +5,12 @@ import mk.ukim.finki.emt.model.exceptions.IsbnLengthException;
 import mk.ukim.finki.emt.model.exceptions.NegativePriceException;
 import mk.ukim.finki.emt.model.jpa.Book;
 import mk.ukim.finki.emt.model.jpa.Category;
+import mk.ukim.finki.emt.persistence.AuthorsRepository;
 import mk.ukim.finki.emt.service.StoreManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,12 +32,19 @@ public class AdminController {
     private StoreManagementService storeManagementService;
 
     @Autowired
+    AuthorsRepository authorsRepository;
+
+    @Autowired
     public AdminController(StoreManagementService storeManagementService) {
         this.storeManagementService = storeManagementService;
     }
 
     @RequestMapping(value = {"/admin/category"}, method = RequestMethod.GET)
     public String addCategory(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()){
+            UserDetails details = (UserDetails) authentication.getPrincipal();
+        }
         model.addAttribute("pageFragment", "addCategory");
         return "index";
     }
@@ -41,6 +52,7 @@ public class AdminController {
     @RequestMapping(value = {"/admin/book"}, method = RequestMethod.GET)
     public String addBook(Model model) {
         model.addAttribute("pageFragment", "addBook");
+        model.addAttribute("authors", authorsRepository.findAll());
         return "index";
     }
 
@@ -57,6 +69,7 @@ public class AdminController {
                               @RequestParam String name,
                               @RequestParam Long categoryId,
                               @RequestParam String authors,
+                              @RequestParam Long[] authorIds,
                               @RequestParam String isbn10,
                               @RequestParam String isbn13,
                               @RequestParam Double price,
@@ -68,6 +81,7 @@ public class AdminController {
                 name,
                 categoryId,
                 authors.split(";"),
+                authorIds,
                 isbn10,
                 isbn13,
                 price

@@ -35,7 +35,7 @@ public class BookHelperTest {
     private CategoryRepository categoryRepository;
 
     private Category topLevelCategory, subCategory;
-    private Book book;
+    private Book book, secondBook;
 
     @Before
     public void setUp() throws Exception {
@@ -46,6 +46,7 @@ public class BookHelperTest {
     @After
     public void tearDown() throws Exception {
         if (book != null) bookRepository.delete(book.id);
+        if (secondBook != null) bookRepository.delete(secondBook.id);
         if (subCategory != null) categoryRepository.delete(subCategory.id);
         if (topLevelCategory != null) categoryRepository.delete(topLevelCategory.id);
     }
@@ -56,6 +57,12 @@ public class BookHelperTest {
                 new String[]{"Felipe Gutierrez"}, "1484214323", "9781484214329", 100.0);
 
         Assert.assertNotNull(bookRepository.findOne(book.id));
+
+        secondBook = bookServiceHelper.createBook("Tester book", subCategory.id,
+                new String[]{"Gjorche Cekovski"}, new Long[] {book.authors.get(0).id},
+                "1234567890", "1234567890123", 49.99);
+
+        Assert.assertNotNull(bookRepository.findOne(secondBook.id));
     }
 
     @Test
